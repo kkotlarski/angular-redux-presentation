@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>Angular + Unidirectional data flow (Redux)</title>
+
+		<meta name="description" content="A framework for easily creating beautiful presentations using HTML">
+		<meta name="author" content="Hakim El Hattab">
+
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme/black.css" id="theme">
+
+		<!-- Code syntax highlighting -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+
+		<!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js"></script>
+		<![endif]-->
+
+		<style>
+			.reveal pre {
+				width: 100%;
+			}
+			.reveal pre code {
+				max-height: 550px;
+			}
+		</style>
+	</head>
+
+	<body>
+
+		<div class="reveal">
+
+			<!-- Any section element inside of this container is displayed as a slide -->
+			<div class="slides">
+				<section>
+					<h1>Angular + Unidirectional data flow (Redux)</h1>
+					<p>
+						<small>Created by <a href="mailto:krzysztof@kotlarski.net">Krzysztof Kotlarski</a><br><a href="mailto:krzysztof@kotlarski.net">krzysztof@kotlarski.net</a></small>
+					</p>
+				</section>
+
+				<section>
+					<h2>Unidirectional data flow</h2>
+					<img src="assets/flux.jpeg" alt="" />
+				</section>
+
+				<section>
+					<h2>Redux</h2>
+					<ul>
+						<li>store is single source of truth</li>
+						<li>store can change only in response to emited actions</li>
+						<li>store can be changed only by pure functions</li>
+					</ul>
+				</section>
+
+				<section>
+					<h2>Redux action</h2>
+					<pre><code data-trim>
+const ADD_TODO = 'ADD_TODO'
+{
+  type: ADD_TODO,
+  text: 'Build my first Redux app'
+}
+
+function addTodo(text) {
+  return {
+    type: ADD_TODO,
+    text
+  }
+}
+					</code></pre>
+				</section>
+
+				<section>
+					<h2>Redux reducer</h2>
+					<pre><code data-trim>
+function todoApp(state = initialState, action) {
+  switch (action.type) {
+   case ADD_TODO:
+      return Object.assign({}, state, {
+        todos: [
+          ...state.todos,
+          {
+            text: action.text,
+            completed: false
+          }
+        ]
+      })    
+    default:
+      return state
+  }
+}
+					</code></pre>
+				</section>
+
+				<section>
+					<h2>Redux store</h2>
+					<pre><code data-trim>
+let store = createStore(todoApp)
+store.dispatch(addTodo('Learn about actions'))
+store.dispatch(addTodo('Learn about reducers'))
+store.dispatch(addTodo('Learn about store'))
+					</code></pre>
+				</section>
+
+				<section>
+					<section>
+						<h2>ng-Redux</h2>
+						<pre><code data-trim>
+angular.module('app', [ngRedux])
+  .config(($ngReduxProvider) => {
+    $ngReduxProvider.createStoreWith(todoApp);
+  });
+
+class TodoController {
+  constructor($ngRedux, $scope) {
+    let unsubscribe = $ngRedux.connect(this.mapStateToThis, TodoActions)(this);
+    $scope.$on('$destroy', unsubscribe);
+  }
+
+  mapStateToThis(state) {
+    return {
+      value: state.todos
+    };
+  }
+}
+						</code></pre>
+					</section>
+
+					<section>
+						<h2>ng-Redux</h2>
+						<pre><code data-trim>
+&lt;div&gt;
+	&lt;input ng-model="todoText" type="text" /&gt;
+	&lt;button ng-click="todo.addTodo(todoText)"&gt;Add&lt;/button&gt;
+	&lt;ul&gt;
+		&lt;li ng-repeat="item in todo.todos">{item.text}&lt;/li&gt;
+	&lt;/ul&gt;
+&lt;/div&gt;
+
+						</code></pre>
+					</section>
+
+				</section>
+
+				<section>
+					<section>
+						<h2>Pros and cons</h2>
+	<p>+ structure for complex workflows<br>
+	+ possible performance boost<br>
+	+ easy to track data changes<br>
+	<br>
+	- feature redundance<br>
+	- more code to write<br>
+	- two way data binding becomes an issue</p>
+					</section>
+				</section>
+
+				<section>
+					<h1>Q&amp;A</h1>
+					<p>Thank you</p>
+				</section>
+
+
+			</div>
+
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.js"></script>
+
+		<script>
+
+			// Full list of configuration options available at:
+			// https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: true,
+				progress: true,
+				history: true,
+				center: true,
+
+				transition: 'slide', // none/fade/slide/convex/concave/zoom
+
+				// Optional reveal.js plugins
+				dependencies: [
+					{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+					{ src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/highlight/highlight.js', async: true, condition: function() { return !!document.querySelector( 'pre code' ); }, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: 'plugin/zoom-js/zoom.js', async: true },
+					{ src: 'plugin/notes/notes.js', async: true }
+				]
+			});
+
+		</script>
+
+	</body>
+</html>
