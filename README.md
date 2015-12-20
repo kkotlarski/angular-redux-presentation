@@ -1,1 +1,1 @@
-# WebPack Angular.js setup
+# Angular + Unidirectional data flow (Redux)
